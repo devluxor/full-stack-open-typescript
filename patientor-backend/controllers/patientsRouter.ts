@@ -24,7 +24,6 @@ router.post('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
   const patient:Patient | undefined = patientsService.getSinglePatient(req.params.id);
-  console.log(patient)
   if (!patient) {
     res.status(404).send('Patient not found');
     return;

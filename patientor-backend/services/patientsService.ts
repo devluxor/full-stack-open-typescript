@@ -39,7 +39,6 @@ const validPatientData = (patientData:unknown):patientData is NewPatientData => 
 };
 
 const getSinglePatient = (id: string): Patient | undefined => {
-  console.log("🤖 ~ file: patientsService.ts:39 ~ getSinglePatient ~ data.find(p => p.id === id):", data.find(p => p.id === id))
   return data.find(p => p.id === id);
 };
 
