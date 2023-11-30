@@ -1,129 +1,109 @@
-import axios from "axios";
-import { useState } from "react";
-import { Patient, Gender, Diagnosis} from "../../types";
+// import axios from 'axios';
+// import { useState } from 'react';
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
-import WorkIcon from '@mui/icons-material/Work';
+// import WorkIcon from '@mui/icons-material/Work';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { Typography, Button } from "@mui/material";
-import Box from '@mui/material/Box';
-import patientService from "../../services/patients";
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import { Typography } from '@mui/material';
+// import Box from '@mui/material/Box';
+// import patientService from '../../services/patients';
+// import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import { 
+  Patient, 
+  Gender, 
+  Diagnosis, 
+  Entry,
+  Discharge,
+  SickLeave
+} from '../../types';
 
 interface Props {
   patient : Patient | null | undefined
   diagnoses: Diagnosis[]
 }
 
-// const HealthRating = (health: HealthCheckRating) => {
-//     switch(health){
-//         case 0:
-//             return <FavoriteIcon sx={{ color: "green" }}/>;
-//         case 1:
-//             return <FavoriteIcon sx={{ color: "yellow" }}/>;
-//         case 2:
-//             return <FavoriteIcon sx={{ color: "blue" }}/>;
-//         case 3:
-//             return <FavoriteIcon sx={{ color: "red" }}/>;
-//     }
-// }
-
-// const assertNever = (value: never): never => {
-//     throw new Error(
-//       `Unhandled discriminated union member: ${JSON.stringify(value)}`
-//     );
-//   };
-
-// const EntryDetails = ({ entry }: { entry: Entry } ) => {
-//     switch(entry.type){
-//         case "HealthCheck": 
-//             return (
-//                 <div>
-//                     {HealthRating(entry.healthCheckRating)}
-//                 </div>
-//             );
-//         case "Hospital":
-//             return (
-//                 <div>
-//                     <p>Discharge date: {entry.discharge.date}</p>
-//                     <ul>
-//                        <li>criteria: <i>{entry.discharge.criteria}</i></li> 
-//                     </ul>
-                    
-//                 </div>
-//             );
-//         case "OccupationalHealthcare":
-//             return (
-//                 <div>
-//                     {entry.sickLeave? 
-//                       <p>SICK LEAVE: {entry.sickLeave.startDate} - {entry.sickLeave.endDate}</p>
-//                        : null
-//                     }
-//                 </div>
-//             );
-//         default:
-//             return assertNever(entry);
-//     }
-// }
-
 const SinglePatientPage = ({ patient, diagnoses }: Props) => {
+  if (!patient) return;
 
-    // const [modalOpen, setModalOpen] = useState<boolean>(false);
-    const [error, setError] = useState<string>();
-    
-    // const openModal = (): void => setModalOpen(true);
-
-    // const closeModal = (): void => {
-    //     setModalOpen(false);
-    //     setError(undefined);
-    //   };
-  
-    // const submitNewEntry = async (values: EntryWithoutId) => {
-    //     try {
-    //         if(patient){
-    //             const entry = await patientService.addEntry(patient.id, values);
-    //             patient = {...patient, entries: patient.entries.concat(entry)};
-    //             setModalOpen(false);
-    //         }
-    //     } catch (e: unknown) {
-    //     if (axios.isAxiosError(e)) {
-    //       if (e?.response?.data && typeof e?.response?.data === "string") {
-    //         const message = e.response.data.replace('Something went wrong. Error: ', '');
-    //         console.error(message);
-    //         setError(message);
-    //       } else {
-    //         setError("Unrecognized axios error");
-    //       }
-    //     } else {
-    //       console.error("Unknown error", e);
-    //       setError("Unknown error");
-    //     }
-    //   }
-    // };
-  console.log(patient)
-   return(
+  return(
     <div>
-       <Typography
-        style={{marginTop: 30}}
-        component="h5" 
-        variant="h5">
-          {patient?.name} {genderId(patient?.gender)}
-       </Typography>
-       <p>ssn: {patient?.ssn}</p>
-       <p>occupation: {patient?.occupation}</p>
+      <Typography
+       style={{marginTop: 30}}
+       component='h5' 
+       variant='h5'>
+         {patient.name} {genderId(patient.gender)}
+      </Typography>
+      <p>SSN: {patient.ssn}</p>
+      <p>Occupation: {patient.occupation}</p>
+      <EntryList entries={patient.entries}/>
     </div>
-   )
-}
+  );
+};
 
-const genderId = (gender: Gender | undefined ) => {
+const genderId = (gender: Gender ) => {
   switch(gender){
-    case "female":
-      return <FemaleIcon />;
-    case "male":
-      return <MaleIcon/>;
-    default:
-      return null;
+    case 'female': return <FemaleIcon />;
+    case 'male': return <MaleIcon/>; 
   }
 };
+
+const EntryList = ({entries}:{entries:Entry[] | undefined}) => {
+  const header = (
+    <Typography
+    style={{marginTop: 30}}
+    component='h6' 
+    variant='h6'>
+      Entries
+   </Typography>
+  );
+
+  if (!entries || entries.length === 0) return header;
+
+  return (
+    <div>
+      {header}
+      {entries.map(e => <EntryDetails key={e.id} entry={e} />)}
+    </div>
+  );
+};
+
+const EntryDetails = ({ entry }: { entry: Entry } ) => { 
+  switch(entry.type) {
+  case 'HealthCheck': 
+    return <HealthCheckEntryComponent health={entry.healthCheckRating}/>;
+  case 'Hospital':
+    return <HospitalEntryComponent discharge={entry.discharge} />;
+  case 'OccupationalHealthcare':
+    return <OccupationalHealthcareEntryComponent sickLeave={entry.sickLeave}/>;
+  default:
+    const value:never = entry;
+    throw new Error(
+      `Error handling Entry Type Discriminant Property: ${JSON.stringify(value)}`
+    );
+  }
+};
+
+
+const HealthCheckEntryComponent = ({health}:{health:number}) => {
+  switch(health){
+    case 0: return <FavoriteIcon sx={{color: 'green' }}/>;
+    case 1: return <FavoriteIcon sx={{color: 'yellow' }}/>;
+    case 2: return <FavoriteIcon sx={{color: 'blue' }}/>;
+    case 3: return <FavoriteIcon sx={{color: 'red' }}/>;
+  }
+};
+
+const HospitalEntryComponent = ({discharge}:{discharge:Discharge}) => {
+  return <p>Discharge date: {discharge.date} <i>{discharge.criteria}</i></p>;
+};
+
+const OccupationalHealthcareEntryComponent = (
+  {sickLeave}:{sickLeave:SickLeave | undefined}
+) => {
+  if (!sickLeave) return;
+
+  return <p>Sick leave: {sickLeave.startDate} - {sickLeave.endDate}</p>;
+};
+
 
 export default SinglePatientPage;
