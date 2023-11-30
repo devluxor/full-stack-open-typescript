@@ -1,15 +1,19 @@
 import data from "../data/patients";
-import { Patient, NewPatientData } from "../types";
+import { Patient, NewPatientData, NonSensitivePatient} from "../types";
 import { v1 as uuid } from 'uuid';
 
-const getPatients = ():Omit<Patient, 'ssn'>[] => {
-  return data.map(patient => {
+const getPatients = ():Patient[] => {
+  return data;
+};
+
+const getPatientsNoSensitive = ():NonSensitivePatient[] => {
+  return data.map(({id, name, dateOfBirth, gender, occupation}) => {
     return {
-      id: patient.id,
-      name: patient.name,
-      dateOfBirth: patient.dateOfBirth,
-      gender: patient.gender,
-      occupation: patient.occupation
+      id,
+      name,
+      dateOfBirth,
+      gender,
+      occupation
     };
   });
 };
@@ -19,7 +23,7 @@ const addPatient = (patientData:NewPatientData):Patient => {
     throw new Error('Invalid new patient data');
   }
 
-  const patient:Patient = {...patientData, id: uuid() as string};
+  const patient:Patient = {...patientData, id: uuid()};
   data.push(patient);
   return patient;
 };
@@ -34,8 +38,16 @@ const validPatientData = (patientData:unknown):patientData is NewPatientData => 
   );
 };
 
+const getSinglePatient = (id: string): Patient | undefined => {
+  console.log("🤖 ~ file: patientsService.ts:39 ~ getSinglePatient ~ data.find(p => p.id === id):", data.find(p => p.id === id))
+  return data.find(p => p.id === id);
+};
+
+
 export default {
   getPatients,
+  getPatientsNoSensitive,
   addPatient,
-  validPatientData
+  validPatientData,
+  getSinglePatient
 };

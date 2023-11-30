@@ -1,14 +1,15 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
 import patientsService from "../services/patientsService";
 import toNewPatient from "../utils/toNewPatient";
+import { Patient } from "../types";
 
 const router = Router();
 
-router.get('/', (_req, res:Response) => {
+router.get('/', (_req, res) => {
   res.json(patientsService.getPatients());
 });
 
-router.post('/', (req:Request, res:Response) => {
+router.post('/', (req, res) => {
   try{
     const patientData = toNewPatient(req.body);
     const addedPatient = patientsService.addPatient(patientData);
@@ -19,6 +20,17 @@ router.post('/', (req:Request, res:Response) => {
 
     res.status(400).send(message);
   }
+});
+
+router.get('/:id', (req, res) => {
+  const patient:Patient | undefined = patientsService.getSinglePatient(req.params.id);
+  console.log(patient)
+  if (!patient) {
+    res.status(404).send('Patient not found');
+    return;
+  }
+
+  res.json(patient);
 });
 
 export default router;
